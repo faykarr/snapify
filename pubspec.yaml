@@ -37,6 +37,7 @@ dependencies:
   cupertino_icons: ^1.0.6
   flutter_launcher_icons: ^0.13.1
   flutter_native_splash: ^2.4.0
+  path: ^1.9.0
 
 flutter_launcher_icons:
   android: "launcher_icon"
@@ -45,7 +46,7 @@ flutter_launcher_icons:
 
 flutter_native_splash:
   color: "#E3EFF8"
-  image: "assets/images/icon.jpg"
+  image: assets/images/icon.jpg
 
 dev_dependencies:
   flutter_test:

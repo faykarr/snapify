@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:snapify/pages/home.dart';
 import 'package:snapify/utils/constant.dart';
 
 class SplashScreen extends StatelessWidget {
@@ -55,7 +56,9 @@ class SplashScreen extends StatelessWidget {
                       left: 40,
                     ),
                     child: Text(
-                      'Effortlessly save images and videos from the internet. Preview and download with ease. Your content, your gallery.',
+                      'Effortlessly save images and videos from the internet. '
+                      'Preview and download with ease. Your content, your '
+                      'gallery.',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
@@ -84,7 +87,15 @@ class SplashScreen extends StatelessWidget {
                         ],
                       ),
                       child: ElevatedButton(
-                        onPressed: () {},
+                        // Event action to route home page
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const Home(),
+                            ),
+                          );
+                        },
                         style: ElevatedButton.styleFrom(
                           foregroundColor: Colors.transparent,
                           backgroundColor: Colors.transparent,
@@ -93,8 +104,7 @@ class SplashScreen extends StatelessWidget {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(100),
                           ),
-                          padding: EdgeInsets
-                              .zero, // Remove padding so the container's padding is used
+                          padding: EdgeInsets.zero,
                         ),
                         child: Ink(
                           decoration: BoxDecoration(
