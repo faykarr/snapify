@@ -266,18 +266,44 @@ class _ImageSaverState extends State<ImageSaver> {
         //     Display downloaded image after saving to gallery.
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(21),
-            child: downloadedImage!,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(21),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  spreadRadius: 2,
+                  blurRadius: 5,
+                  offset: const Offset(5, 5), // changes position of shadow
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(21),
+              child: downloadedImage!,
+            ),
           ),
         );
       } else if (previewImage != null) {
         //     Preview image from URL without saving to gallery
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(21),
-            child: Image.network(previewImage!),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(21),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  spreadRadius: 2,
+                  blurRadius: 5,
+                  offset: const Offset(5, 5), // changes position of shadow
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(21),
+              child: Image.network(previewImage!),
+            ),
           ),
         );
       }

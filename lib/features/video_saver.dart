@@ -234,12 +234,26 @@ class _VideoSaverState extends State<VideoSaver> {
               else
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(21),
-                    child: AspectRatio(
-                      aspectRatio: _videoPlayerController.value.aspectRatio,
-                      child: FlickVideoPlayer(
-                        flickManager: _flickManager,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(21),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          spreadRadius: 2,
+                          blurRadius: 5,
+                          offset:
+                              const Offset(5, 5), // changes position of shadow
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(21),
+                      child: AspectRatio(
+                        aspectRatio: _videoPlayerController.value.aspectRatio,
+                        child: FlickVideoPlayer(
+                          flickManager: _flickManager,
+                        ),
                       ),
                     ),
                   ),
