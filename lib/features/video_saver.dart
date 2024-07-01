@@ -3,6 +3,7 @@ import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:snapify/utils/constant.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoSaver extends StatefulWidget {
@@ -21,6 +22,23 @@ class _VideoSaverState extends State<VideoSaver> {
   bool showVideoPlayer = false;
 
   _pickVideo(String videoUrl) async {
+    if (videoUrl.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('No URL Provided.'),
+          content: const Text('Please enter a valid video URL.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
     setState(() {
       isVideoLoading = true;
       showVideoPlayer = true;
@@ -67,7 +85,6 @@ class _VideoSaverState extends State<VideoSaver> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     setState(() {
       inputController.text = '';
@@ -76,7 +93,6 @@ class _VideoSaverState extends State<VideoSaver> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
     _flickManager.dispose();
     super.dispose();
   }
@@ -125,20 +141,33 @@ class _VideoSaverState extends State<VideoSaver> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               // Distribute buttons evenly
               children: [
-                ElevatedButton(
+                ElevatedButton.icon(
                   onPressed: () async {
                     // Action for the preview button
                     await _pickVideo(inputController.text);
                   },
-                  child: const Text('Preview'),
+                  icon: const Icon(Icons.play_arrow),
+                  label: const Text('Preview'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: buttonColor,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 30),
+                  ),
                 ),
                 // Show Save button only when video is previewed
                 if (showVideoPlayer)
-                  ElevatedButton(
-                    onPressed: () {
-                      _saveVideo(inputController.text);
+                  OutlinedButton.icon(
+                    onPressed: () async {
+                      await _saveVideo(inputController.text);
                     },
-                    child: const Text('Save Video'),
+                    icon: const Icon(Icons.favorite_border_outlined),
+                    label: const Text('Save Video'),
+                    style: OutlinedButton.styleFrom(
+                      backgroundColor: backgroundColor2,
+                      foregroundColor: buttonColor,
+                      side: BorderSide(color: buttonColor),
+                      padding: const EdgeInsets.symmetric(horizontal: 30),
+                    ),
                   ),
               ],
             ),
@@ -147,18 +176,48 @@ class _VideoSaverState extends State<VideoSaver> {
             ),
             if (downloadProgress > 0)
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 50,
-                ),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    LinearProgressIndicator(
-                      value: downloadProgress,
-                      borderRadius: BorderRadius.circular(12.0),
+                padding: const EdgeInsets.symmetric(horizontal: 50),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  // Rounded corners for the container
+                  child: Container(
+                    height: 30,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.blue.shade200,
+                          Colors.blue.shade500,
+                        ],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                      ),
                     ),
-                    Text('Downloading ${(downloadProgress * 100).toInt()}%')
-                  ],
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // Animated progress bar
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          width: MediaQuery.of(context).size.width *
+                              0.6 *
+                              downloadProgress,
+                          // Adjust width based on progress
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                        // Percentage text
+                        Text(
+                          'Downloading ${(downloadProgress * 100).toInt()}%',
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             const Divider(
