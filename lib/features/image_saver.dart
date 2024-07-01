@@ -1,33 +1,33 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
-import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:snapify/utils/constant.dart';
-import 'package:video_player/video_player.dart';
 
-class VideoSaver extends StatefulWidget {
-  const VideoSaver({super.key});
+class ImageSaver extends StatefulWidget {
+  const ImageSaver({super.key});
 
   @override
-  State<VideoSaver> createState() => _VideoSaverState();
+  State<ImageSaver> createState() => _ImageSaverState();
 }
 
-class _VideoSaverState extends State<VideoSaver> {
+class _ImageSaverState extends State<ImageSaver> {
   TextEditingController inputController = TextEditingController();
-  late VideoPlayerController _videoPlayerController;
-  late FlickManager _flickManager;
-  bool isVideoLoading = false;
+  bool isImageLoading = false;
   double downloadProgress = 0.0;
-  bool showVideoPlayer = false;
+  bool showImage = false;
+  Image? downloadedImage;
+  String? previewImage;
 
-  _pickVideo(String videoUrl) async {
-    if (videoUrl.isEmpty) {
+  _pickImage(String imageUrl) async {
+    if (imageUrl.isEmpty) {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('No URL Provided.'),
-          content: const Text('Please enter a valid video URL.'),
+          content: const Text('Please enter a valid image URL.'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
@@ -40,47 +40,69 @@ class _VideoSaverState extends State<VideoSaver> {
     }
 
     setState(() {
-      isVideoLoading = true;
-      showVideoPlayer = true;
+      previewImage = imageUrl;
+      showImage = true;
     });
-    _videoPlayerController =
-        VideoPlayerController.networkUrl(Uri.parse(videoUrl))
-          ..initialize().then((_) {
-            setState(() {
-              isVideoLoading = false;
-            });
-          });
-    _flickManager = FlickManager(videoPlayerController: _videoPlayerController);
   }
 
-  Future<void> _saveVideo(String videoUrl) async {
+  Future<void> _saveImage(String imageUrl) async {
+    if (imageUrl.isEmpty) {
+      return;
+    }
+
     final appDir = await getApplicationDocumentsDirectory();
-    String fileName = '${DateTime.now().millisecondsSinceEpoch}.mp4';
+    String fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
     final filePath = '${appDir.path}/$fileName';
 
     Dio dio = Dio();
 
     setState(() {
+      isImageLoading = true;
       downloadProgress = 0.0;
     });
 
-    await dio.download(
-      videoUrl,
-      filePath,
-      onReceiveProgress: (received, total) {
-        if (total != -1) {
-          setState(() {
-            downloadProgress = received / total;
-          });
-        }
-      },
-    );
+    try {
+      await dio.download(
+        imageUrl,
+        filePath,
+        onReceiveProgress: (received, total) {
+          if (total != -1) {
+            setState(() {
+              downloadProgress = received / total;
+            });
+          }
+        },
+      );
 
-    await GallerySaver.saveVideo(filePath, albumName: 'Flutter Download');
+      await GallerySaver.saveImage(filePath, albumName: 'Flutter Download');
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Video saved to gallery!')),
-    );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Photo saved to gallery!')),
+      );
+
+      setState(() {
+        downloadedImage = Image.file(File(filePath));
+      });
+    } catch (e) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Error Save Photo.'),
+          content: Text('Error saving photo: $e'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+      return;
+    } finally {
+      setState(() {
+        isImageLoading = false;
+      });
+    }
   }
 
   @override
@@ -89,12 +111,6 @@ class _VideoSaverState extends State<VideoSaver> {
     setState(() {
       inputController.text = '';
     });
-  }
-
-  @override
-  void dispose() {
-    _flickManager.dispose();
-    super.dispose();
   }
 
   @override
@@ -122,7 +138,9 @@ class _VideoSaverState extends State<VideoSaver> {
                         () {
                           inputController.text = '';
                           downloadProgress = 0;
-                          showVideoPlayer = false;
+                          showImage = false;
+                          previewImage = null;
+                          downloadedImage = null;
                         },
                       );
                     },
@@ -144,9 +162,9 @@ class _VideoSaverState extends State<VideoSaver> {
                 ElevatedButton.icon(
                   onPressed: () async {
                     // Action for the preview button
-                    await _pickVideo(inputController.text);
+                    await _pickImage(inputController.text);
                   },
-                  icon: const Icon(Icons.play_arrow),
+                  icon: const Icon(Icons.image),
                   label: const Text('Preview'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: buttonColor,
@@ -155,13 +173,13 @@ class _VideoSaverState extends State<VideoSaver> {
                   ),
                 ),
                 // Show Save button only when video is previewed
-                if (showVideoPlayer)
+                if (showImage)
                   OutlinedButton.icon(
                     onPressed: () async {
-                      await _saveVideo(inputController.text);
+                      await _saveImage(inputController.text);
                     },
                     icon: const Icon(Icons.favorite_border_outlined),
-                    label: const Text('Save Video'),
+                    label: const Text('Save Image'),
                     style: OutlinedButton.styleFrom(
                       backgroundColor: backgroundColor2,
                       foregroundColor: buttonColor,
@@ -228,30 +246,47 @@ class _VideoSaverState extends State<VideoSaver> {
               endIndent: 50.0,
               thickness: 2.0,
             ),
-            if (showVideoPlayer)
-              if (isVideoLoading)
-                const Center(child: CircularProgressIndicator())
-              else
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(21),
-                    child: AspectRatio(
-                      aspectRatio: _videoPlayerController.value.aspectRatio,
-                      child: FlickVideoPlayer(
-                        flickManager: _flickManager,
-                      ),
-                    ),
-                  ),
-                )
-            else
-              const Padding(
-                padding: EdgeInsets.all(20.0),
-                child: Text('Please input the video URL to preview.'),
-              ),
+            contentArea(),
+            const SizedBox(
+              height: 45.0,
+            ),
           ],
         ),
       ),
     );
+  }
+
+  Widget contentArea() {
+    if (showImage) {
+      if (isImageLoading) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      } else if (downloadedImage != null) {
+        //     Display downloaded image after saving to gallery.
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(21),
+            child: downloadedImage!,
+          ),
+        );
+      } else if (previewImage != null) {
+        //     Preview image from URL without saving to gallery
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(21),
+            child: Image.network(previewImage!),
+          ),
+        );
+      }
+    } else {
+      return const Padding(
+        padding: EdgeInsets.all(20),
+        child: Text('Please input the image URL to preview.'),
+      );
+    }
+    return Container();
   }
 }

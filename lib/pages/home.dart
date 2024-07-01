@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:snapify/features/image_saver.dart';
 import 'package:snapify/features/video_saver.dart';
 import 'package:snapify/utils/constant.dart';
 
@@ -95,7 +96,7 @@ class _HomeState extends State<Home> {
         const TabBarView(
           children: [
             VideoSaver(),
-            Placeholder(),
+            ImageSaver(),
           ],
         ),
       ],
