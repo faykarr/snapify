@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:snapify/features/video_saver.dart';
 import 'package:snapify/utils/constant.dart';
 
 class Home extends StatefulWidget {
@@ -33,7 +34,7 @@ class _HomeState extends State<Home> {
             actions: [
               IconButton(
                 onPressed: () {},
-                icon: const Icon(Icons.account_circle_outlined),
+                icon: const Icon(Icons.account_circle),
               ),
             ],
             bottom: PreferredSize(
@@ -93,7 +94,7 @@ class _HomeState extends State<Home> {
         ),
         const TabBarView(
           children: [
-            Placeholder(),
+            VideoSaver(),
             Placeholder(),
           ],
         ),
